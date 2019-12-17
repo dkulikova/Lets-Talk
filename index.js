@@ -4,36 +4,11 @@
 const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 var value = 0;
-// Insert questions to be randomed
-// const Question1IntentHandler = {
-//     canHandle(handlerInput) {
-//       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-//             && handlerInput.requestEnvelope.request.intent.name === 'Question1IntentHandler';
-//     },
-//     async handle(handlerInput) {
-//         const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value; 
-        
-//         const questions = ['1', '2', '3', '4', '5', '6'];
-//         const speakOutput = questions[i];
-        
-//         if(i > 4) {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
-//             .getResponse();
-//         } else {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             .reprompt(questions[i])
-//             .getResponse();
-//         }
-//         i += 1;
-//     }
-// };
+var i = 0;
+const questions = ['How are you feeling today?', 'Question2', 'Question3', 'Question4', 'Question5', 'Quesiton 6', 'Question7'];
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
-       // return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
         return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
     },
     handle(handlerInput) {
@@ -48,7 +23,6 @@ const LaunchRequestHandler = {
 
 const HasBirthdayLaunchRequestHandler = {    
     canHandle(handlerInput) {
-        
         const attributesManager = handlerInput.attributesManager;        
         const sessionAttributes = attributesManager.getSessionAttributes() || {};
         
@@ -56,7 +30,7 @@ const HasBirthdayLaunchRequestHandler = {
         
         return handlerInput.requestEnvelope.request.type === 'LaunchRequest' && name;
     },    
-   async handle(handlerInput) {
+    async handle(handlerInput) {
         const serviceClientFactory = handlerInput.serviceClientFactory;
         const deviceId = handlerInput.requestEnvelope.context.System.device.deviceId;
         const attributesManager = handlerInput.attributesManager;        
@@ -68,46 +42,23 @@ const HasBirthdayLaunchRequestHandler = {
         // TODO:: Say Happy birthday on the user's birthday
         
         const speakOutput = `Welcome back ${name}. Shall we begin?`;
-        
+        i = 0;
         return handlerInput.responseBuilder            
-        .speak(speakOutput)            
-        .getResponse();    
-        
-    } 
-    
+        .speak(speakOutput)
+        .reprompt()
+        .getResponse();
+    }
 };
 
-
-const YesIntentHandler = {
-    canHandle(handlerInput) {
-        return handlerInput.requestEnvelope.request.type === "IntentRequest"
-        && handlerInput.requestEnvelope.request.intent.name === "AMAZON.YesIntent";
-    },
-    handle(handlerInput){
-        const speechText = `In a scale of 0-3, how are you feeling?`;
-        
-        return handlerInput.responseBuilder
-            .speak(speechText)
-            .reprompt(speechText)
-            .getResponse
-    }
-}
-       
-    
-
 const CaptureBirthdayIntentHandler = {
+    
     canHandle(handlerInput) {
-       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-            && handlerInput.requestEnvelope.request.intent.name === 'CaptureBirthdayIntent'
-            // && Alexa.getIntentName(handlerInput.requestEnvelope) === 'QuestionOneIntentHandler'
-            // && Alexa.getIntentName(handlerInput.requestEnvelope) === 'QuestionTwoIntentHandler'
-            // && Alexa.getIntentName(handlerInput.requestEnvelope) === 'FinalIntentHandler'
+        return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+            && handlerInput.requestEnvelope.request.intent.name === 'CaptureBirthdayIntent';
+            
     },
     async handle(handlerInput) {
         const name = handlerInput.requestEnvelope.request.intent.slots.name.value;
-        const answerone = handlerInput.requestEnvelope.request.intent.slots.answerone.value; 
-        const answertwo = handlerInput.requestEnvelope.request.intent.slots.answertwo.value; 
-
         
         const attributesManager = handlerInput.attributesManager;
         
@@ -120,157 +71,68 @@ const CaptureBirthdayIntentHandler = {
         await attributesManager.savePersistentAttributes();
 
         const speakOutput = `Thanks, I'll remember that your name is ${name}. Shall we begin?`;
-        
-        // if(answerone && answertwo) {
-        //     value = answerone + answertwo;
-        //     const speakOutput = `Your value is ${value}.`;
-        //     return handlerInput.responseBuilder
-        //         .speak(speakOutput)
-        //         // .reprompt('add a reprompt if you want to keep the session open for the user to respond')
-        //         .getResponse();
-        // }
+        i = 0;
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            // .reprompt('add3')
+            .reprompt()
             .getResponse();
     }
 };
 
-const QuestionOneIntentHandler = {
+const YesIntentHandler = {
     canHandle(handlerInput) {
-       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-            && handlerInput.requestEnvelope.request.intent.name === 'QuestionOneIntent';
+        return handlerInput.requestEnvelope.request.type === "IntentRequest"
+        && handlerInput.requestEnvelope.request.intent.name === "AMAZON.YesIntent";
     },
-    async handle(handlerInput) {
-        // const begin = handlerInput.requestEnvelope.request.intent.slots.begin.value;
-        // const name = handlerInput.requestEnvelope.request.intent.slots.name.value; 
-
-        const speakOutput = `In a scale of 0-3, how are you feeling?`;
-
+    handle(handlerInput){
+        const speechText = `I'll ask 5 questions. Please answer every question in a scale of 0-3. ` + questions[i];
         return handlerInput.responseBuilder
-            .speak(speakOutput)
-            .reprompt('Sorry i did not get your answer.')
+            .speak(speechText)
+            .reprompt(speechText)
             .getResponse();
     }
-};
+}
 
-
-const QuestionTwoIntentHandler = {
+const NoIntentHandler = {
     canHandle(handlerInput) {
-       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-            && handlerInput.requestEnvelope.request.intent.name === 'QuestionTwoIntent';
+        return handlerInput.requestEnvelope.request.type === "IntentRequest"
+        && handlerInput.requestEnvelope.request.intent.name === "AMAZON.NoIntent";
     },
-    async handle(handlerInput) {
-        // const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value; 
-        // value += answer;
-        const speakOutput = 'How much sleep last night?';
+    handle(handlerInput){
+        const speechText = `Okay, have a nice day!`;
         
         return handlerInput.responseBuilder
-        .speak(speakOutput)
-        .reprompt('Sorry i did not get your answer.')
-        .getResponse();
-
-    }
-};
-
-// const QuestionThreeIntentHandler = {
-//     canHandle(handlerInput) {
-//       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-//             && handlerInput.requestEnvelope.request.intent.name === 'Question3IntentHandler';
-//     },
-//     async handle(handlerInput) {
-//         var i = 0;
-//         const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value; 
-        
-//         const questions = ['1', '2', '3', '4', '5', '6'];
-//         const speakOutput = questions[i];
-        
-//         if(i > 4) {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
-//             .getResponse();
-//         } else {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             .reprompt(questions[i])
-//             .getResponse();
-//         }
-//         i += 1;
-//     }
-// };
-
-// const QuestionFourIntentHandler = {
-//     canHandle(handlerInput) {
-//       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-//             && handlerInput.requestEnvelope.request.intent.name === 'Question4IntentHandler';
-//     },
-//     async handle(handlerInput) {
-//         var i = 0;
-//         const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value; 
-        
-//         const questions = ['1', '2', '3', '4', '5', '6'];
-//         const speakOutput = questions[i];
-        
-//         if(i > 4) {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
-//             .getResponse();
-//         } else {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             .reprompt(questions[i])
-//             .getResponse();
-//         }
-//         i += 1;
-//     }
-// };
-
-// const QuestionFiveIntentHandler = {
-//     canHandle(handlerInput) {
-//       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-//             && handlerInput.requestEnvelope.request.intent.name === 'Question5IntentHandler';
-//     },
-//     async handle(handlerInput) {
-//         var i = 0;
-//         const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value; 
-        
-//         const questions = ['1', '2', '3', '4', '5', '6'];
-//         const speakOutput = questions[i];
-        
-//         if(i > 4) {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
-//             .getResponse();
-//         } else {
-//             return handlerInput.responseBuilder
-//             .speak(speakOutput)
-//             .reprompt(questions[i])
-//             .getResponse();
-//         }
-//         i += 1;
-//     }
-// };
-
-const FinalIntentHandler = {
-    canHandle(handlerInput) {
-       return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-            && handlerInput.requestEnvelope.request.intent.name === 'FinalIntent';
-    },
-    async handle(handlerInput) {
-        const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value; 
-        value += answer;
-        const speakOutput = `Your value is ${value}.`;
-
-        return handlerInput.responseBuilder
-            .speak(speakOutput)
-            // .reprompt('Sorry i did not get your answer.')
+            .speak(speechText)
+            .reprompt(speechText)
             .getResponse();
     }
-};
+}
 
+const AnswerIntentHandler = {
+ canHandle(handlerInput) {
+        return handlerInput.requestEnvelope.request.type === "IntentRequest"
+        && handlerInput.requestEnvelope.request.intent.name === "AnswerIntent";
+    },
+    handle(handlerInput){
+        if(i > 3) {
+            const speechText = `Based on your answer, you got value of ${value}`;
+
+            return handlerInput.responseBuilder
+                .speak(speechText)
+                .getResponse();
+        } else {
+            const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value;
+            value += parseInt(answer);
+            i += 1;
+            const speechText = questions[i];
+            return handlerInput.responseBuilder
+                .speak(speechText)
+                .reprompt(speechText)
+                .getResponse();
+        }
+
+    }
+}
 
 const HelpIntentHandler = {
     canHandle(handlerInput) {
@@ -354,37 +216,34 @@ const LoadBirthdayInterceptor = {
         const name = sessionAttributes.hasOwnProperty('name') ? sessionAttributes.name : 0;
         if (name) {            
             attributesManager.setSessionAttributes(sessionAttributes);        
-            
         }    
-        
-    } 
-    
+    }
 };
 // The SkillBuilder acts as the entry point for your skill, routing all request and response
 // payloads to the handlers above. Make sure any new handlers or interceptors you've
 // defined are included below. The order matters - they're processed top to bottom.
 exports.handler = Alexa.SkillBuilders.custom()
     .withApiClient(new Alexa.DefaultApiClient())
-
     .withPersistenceAdapter( 
-    new persistenceAdapter.S3PersistenceAdapter({bucketName:process.env.S3_PERSISTENCE_BUCKET}) 
+        new persistenceAdapter.S3PersistenceAdapter({bucketName:process.env.S3_PERSISTENCE_BUCKET}) 
     )
+
     .addRequestHandlers(
-        CaptureBirthdayIntentHandler,
         HasBirthdayLaunchRequestHandler,
-        QuestionOneIntentHandler,
-        QuestionTwoIntentHandler,
-        YesIntentHandler,
-        FinalIntentHandler,
         LaunchRequestHandler,
+        CaptureBirthdayIntentHandler,
+        AnswerIntentHandler,
+        YesIntentHandler,
+        NoIntentHandler,
         HelpIntentHandler,
         CancelAndStopIntentHandler,
         SessionEndedRequestHandler,
-        IntentReflectorHandler) // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
-    .addRequestInterceptors(    
+        IntentReflectorHandler, // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
+        
+    )
+    .addRequestInterceptors(
             LoadBirthdayInterceptor 
     )
-    
     .addErrorHandlers(
         ErrorHandler,
     )
