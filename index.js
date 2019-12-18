@@ -4,6 +4,8 @@
 // session persistence, api calls, and more.
 const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
+const moment = require('moment-timezone');
+
 var value = 0;
 var i = 0;
 const questions = [' The first statement is: My energy level is low', 'I am struggling to focus on tasks', 'I deny or ignore my problems', 'Too many deadlines', 'My self-esteem is low', 'Quesiton 6', 'Question7'];
@@ -183,14 +185,50 @@ const AnswerIntentHandler = {
 
 const CreateReminderIntentHandler = {
     canHandle(handlerInput) {
-        return handlerInput.requestEnvelope.request.type === 'CreateReminder'
-         && handlerInput.requestEnvelope.request.intent.name === "AMAZON.YesIntent";
+        return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+         && handlerInput.requestEnvelope.request.intent.name === 'CreateReminderIntent';
     },
-    handle(handlerInput) {
-        const speechText = 'Would you like me to set a reminder?';
+    async handle(handlerInput) {
+        const reminderApiClient = handlerInput.serviceClientFactory.getReminderManagementServiceClient(),
+            { permissions } = handlerInput.requestEnvelope.context.System.user
+            
+        if(!permissions) {
+            return handlerInput.responseBuilder
+                .speak("Please go to the Alexa mobile app to grant reminder permissions.")
+                .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite'])
+                .getResponse();
+        }
+        
+        const reminderRequest = {
+           "trigger": {
+                "type" : "SCHEDULED_RELATIVE",
+                "offsetInSeconds" : "30"
+           },
+           "alertInfo": {
+                "spokenInfo": {
+                    "content": [{
+                        "locale": "en-US", 
+                        "text": "Let's Talk!"
+                    }]
+                }
+            },
+            "pushNotification" : {                            
+                 "status" : "ENABLED"
+            }
+        }
+        
+        try {
+            await reminderApiClient.createReminder(reminderRequest);
+        } catch (error) {
+            console.log(`~~~~ Error handled: ${error}`);
+            return handlerInput.responseBuilder
+                .speak("There was an error in your reminder. Please try again later.")
+                .getResponse();
+        }
+        
+        const speechText = 'You succesfully created a reminder!';
         return handlerInput.responseBuilder
             .speak(speechText)
-            //.reprompt(repromptText)
             .getResponse();
     }
 };
@@ -313,4 +351,5 @@ exports.handler = Alexa.SkillBuilders.custom()
     .addErrorHandlers(
         ErrorHandler,
     )
+    .withApiClient(new Alexa.DefaultApiClient())
     .lambda();
