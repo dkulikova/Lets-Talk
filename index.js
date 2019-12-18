@@ -1,3 +1,4 @@
+
 // This sample demonstrates handling intents from an Alexa skill using the Alexa Skills Kit SDK (v2).
 // Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
 // session persistence, api calls, and more.
@@ -5,7 +6,7 @@ const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 var value = 0;
 var i = 0;
-const questions = ['How are you feeling today?', 'Question2', 'Question3', 'Question4', 'Question5', 'Quesiton 6', 'Question7'];
+const questions = [' The first statement is: My energy level is low', 'I am struggling to focus on tasks', 'I deny or ignore my problems', 'Too many deadlines', 'My self-esteem is low', 'Quesiton 6', 'Question7'];
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -76,6 +77,8 @@ const CaptureBirthdayIntentHandler = {
             .speak(speakOutput)
             .reprompt()
             .getResponse();
+        
+        
     }
 };
 
@@ -85,7 +88,7 @@ const YesIntentHandler = {
         && handlerInput.requestEnvelope.request.intent.name === "AMAZON.YesIntent";
     },
     handle(handlerInput){
-        const speechText = `I'll ask 5 questions. Please answer every question in a scale of 0-3. ` + questions[i];
+        const speechText = `I'll say 5 statements. Please rate each statement on a scale of 0-3. 0 being not at all and 3 being all the time.` + questions[i];
         return handlerInput.responseBuilder
             .speak(speechText)
             .reprompt(speechText)
@@ -103,27 +106,73 @@ const NoIntentHandler = {
         
         return handlerInput.responseBuilder
             .speak(speechText)
-            .reprompt(speechText)
+            // .reprompt(speechText)
             .getResponse();
     }
 }
 
 const AnswerIntentHandler = {
+    
  canHandle(handlerInput) {
         return handlerInput.requestEnvelope.request.type === "IntentRequest"
         && handlerInput.requestEnvelope.request.intent.name === "AnswerIntent";
     },
     handle(handlerInput){
-        if(i > 3) {
-            const speechText = `Based on your answer, you got value of ${value}`;
-
+        const attributesManager = handlerInput.attributesManager;
+        const sessionAttributes = attributesManager.getSessionAttributes() || {};
+        const name = sessionAttributes.hasOwnProperty('name') ? sessionAttributes.name : 0;
+        if(i === 4) {
+                    const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value;
+                    if (parseInt(answer) > 3) {
+                     value += 3;
+                     }  
+                     else if (parseInt(answer) < 0){
+                         value+=0;
+                     }
+                     else {
+                    value += parseInt(answer);
+                     }
+                    i += 1;
+                     
+            
+                    const positive = [`That's good to hear ${name} you're doing really well`, `Wow name you're feeling geat aren't you!`, `I'm really happy to hear how well you're doing ${name}`, `Oh my ${name} someones doing great today!`, `Go on ${name} spoil yourself, gt a glass of bubbly out!`];
+                    const hobby = ['music', 'podcast', 'cardio','dance'];
+                    const randomN = Math.floor(Math.random() * Math.floor(4));
+                    const neutral = [`Thanks for taking the time to answer ${name} maybe you should ` + hobby[randomN],`I think it's time we practice some self ${name} love why dont you go for a `+ hobby[randomN],`Have you been busy recently ${name} i think we should practice `+ hobby[randomN], `when was the last time you `+ hobby[randomN]+ ` if it hasnt been a while, I think you should do it now`,`${name} maybe you should call a friend`];
+                    const negative = [`${name} I think it's time for a check up, maybe you should make an appointment.`];
+            var x;
+            var max;
+            if (value<6){
+                max = positive.length;
+                x = positive;
+            }
+            else if (value >=6 && value <= 10){
+                max = neutral.length;
+                x = neutral;
+            }
+            else {
+                max =  negative.length;
+                 x = negative;
+            }
+            const randomNum = Math.floor(Math.random() * Math.floor(max));
+             const speechText = x[randomNum];
+    
             return handlerInput.responseBuilder
                 .speak(speechText)
                 .getResponse();
-        } else {
+            }
+            else {
             const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value;
+            if (parseInt(answer) > 3) {
+             value += 3;
+             }
+             else if (parseInt(answer) < 0){
+                 value+=0;
+             } else {
             value += parseInt(answer);
+             }
             i += 1;
+            
             const speechText = questions[i];
             return handlerInput.responseBuilder
                 .speak(speechText)
@@ -133,6 +182,21 @@ const AnswerIntentHandler = {
 
     }
 }
+
+const CreateReminderIntentHandler = {
+    canHandle(handlerInput) {
+        return handlerInput.requestEnvelope.request.type === 'CreateReminder'
+         && handlerInput.requestEnvelope.request.intent.name === "AMAZON.YesIntent";
+    },
+    handle(handlerInput) {
+        const speechText = 'Would you like me to set a reminder?';
+        return handlerInput.responseBuilder
+            .speak(speechText)
+            //.reprompt(repromptText)
+            .getResponse();
+    }
+};
+
 
 const HelpIntentHandler = {
     canHandle(handlerInput) {
@@ -219,6 +283,9 @@ const LoadBirthdayInterceptor = {
         }    
     }
 };
+
+
+    
 // The SkillBuilder acts as the entry point for your skill, routing all request and response
 // payloads to the handlers above. Make sure any new handlers or interceptors you've
 // defined are included below. The order matters - they're processed top to bottom.
@@ -233,6 +300,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         LaunchRequestHandler,
         CaptureBirthdayIntentHandler,
         AnswerIntentHandler,
+        CreateReminderIntentHandler,
         YesIntentHandler,
         NoIntentHandler,
         HelpIntentHandler,
