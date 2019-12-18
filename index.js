@@ -22,7 +22,7 @@ const LaunchRequestHandler = {
     }
 };
 
-const HasBirthdayLaunchRequestHandler = {    
+const HasNameLaunchRequestHandler = {    
     canHandle(handlerInput) {
         const attributesManager = handlerInput.attributesManager;        
         const sessionAttributes = attributesManager.getSessionAttributes() || {};
@@ -51,11 +51,11 @@ const HasBirthdayLaunchRequestHandler = {
     }
 };
 
-const CaptureBirthdayIntentHandler = {
+const CaptureNameIntentHandler = {
     
     canHandle(handlerInput) {
         return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-            && handlerInput.requestEnvelope.request.intent.name === 'CaptureBirthdayIntent';
+            && handlerInput.requestEnvelope.request.intent.name === 'CaptureNameIntent';
             
     },
     async handle(handlerInput) {
@@ -77,8 +77,6 @@ const CaptureBirthdayIntentHandler = {
             .speak(speakOutput)
             .reprompt()
             .getResponse();
-        
-        
     }
 };
 
@@ -122,24 +120,24 @@ const AnswerIntentHandler = {
         const sessionAttributes = attributesManager.getSessionAttributes() || {};
         const name = sessionAttributes.hasOwnProperty('name') ? sessionAttributes.name : 0;
         if(i === 4) {
-                    const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value;
-                    if (parseInt(answer) > 3) {
-                     value += 3;
-                     }  
-                     else if (parseInt(answer) < 0){
-                         value+=0;
-                     }
-                     else {
-                    value += parseInt(answer);
-                     }
-                    i += 1;
-                     
-            
-                    const positive = [`That's good to hear ${name} you're doing really well`, `Wow name you're feeling geat aren't you!`, `I'm really happy to hear how well you're doing ${name}`, `Oh my ${name} someones doing great today!`, `Go on ${name} spoil yourself, gt a glass of bubbly out!`];
-                    const hobby = ['music', 'podcast', 'cardio','dance'];
-                    const randomN = Math.floor(Math.random() * Math.floor(4));
-                    const neutral = [`Thanks for taking the time to answer ${name} maybe you should ` + hobby[randomN],`I think it's time we practice some self ${name} love why dont you go for a `+ hobby[randomN],`Have you been busy recently ${name} i think we should practice `+ hobby[randomN], `when was the last time you `+ hobby[randomN]+ ` if it hasnt been a while, I think you should do it now`,`${name} maybe you should call a friend`];
-                    const negative = [`${name} I think it's time for a check up, maybe you should make an appointment.`];
+            const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value;
+            if (parseInt(answer) > 3) {
+             value += 3;
+             }  
+             else if (parseInt(answer) < 0){
+                 value+=0;
+             }
+             else {
+            value += parseInt(answer);
+             }
+            i += 1;
+             
+    
+            const positive = [`That's good to hear ${name} you're doing really well`, `Wow name you're feeling geat aren't you!`, `I'm really happy to hear how well you're doing ${name}`, `Oh my ${name} someones doing great today!`, `Go on ${name} spoil yourself, gt a glass of bubbly out!`];
+            const hobby = ['music', 'podcast', 'cardio','dance'];
+            const randomN = Math.floor(Math.random() * Math.floor(4));
+            const neutral = [`Thanks for taking the time to answer ${name} maybe you should ` + hobby[randomN],`I think it's time we practice some self ${name} love why dont you go for a `+ hobby[randomN],`Have you been busy recently ${name} i think we should practice `+ hobby[randomN], `when was the last time you `+ hobby[randomN]+ ` if it hasnt been a while, I think you should do it now`,`${name} maybe you should call a friend`];
+            const negative = [`${name} I think it's time for a check up, maybe you should make an appointment.`];
             var x;
             var max;
             if (value<6){
@@ -296,9 +294,9 @@ exports.handler = Alexa.SkillBuilders.custom()
     )
 
     .addRequestHandlers(
-        HasBirthdayLaunchRequestHandler,
+        HasNameLaunchRequestHandler,
         LaunchRequestHandler,
-        CaptureBirthdayIntentHandler,
+        CaptureNameIntentHandler,
         AnswerIntentHandler,
         CreateReminderIntentHandler,
         YesIntentHandler,
