@@ -1,7 +1,7 @@
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "tech titans",
+            "invocationName": "lets talk",
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
@@ -28,8 +28,18 @@
                         }
                     ],
                     "samples": [
-                        "my name is {name}"
+                        "my name is {name}",
+                        "{name}",
+                        "i am {name}"
                     ]
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
                 },
                 {
                     "name": "AnswerIntent",
@@ -42,27 +52,41 @@
                     "samples": [
                         "{answer}"
                     ]
-                },
-                {
-                    "name": "AMAZON.NoIntent",
-                    "samples": []
-                },
-                {
-                    "name": "AMAZON.YesIntent",
-                    "samples": [
-                        "yes please"
-                    ]
-                },
-                {
-                    "name": "CreateReminderIntent",
-                    "slots": [],
-                    "samples": [
-                        "reminder",
-                        "remind me"
-                    ]
                 }
             ],
             "types": []
-        }
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "CaptureNameIntent",
+                    "confirmationRequired": false,
+                    "prompts": {},
+                    "slots": [
+                        {
+                            "name": "name",
+                            "type": "AMAZON.FirstName",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.966394071970.940577216059"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "delegationStrategy": "ALWAYS"
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.966394071970.940577216059",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Sorry, can you repeat your name?"
+                    }
+                ]
+            }
+        ]
     }
 }

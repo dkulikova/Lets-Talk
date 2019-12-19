@@ -6,9 +6,9 @@ const Alexa = require('ask-sdk-core');
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 const moment = require('moment-timezone');
 
-var value = 0;
+var value;
 var i = 0;
-const questions = [' The first statement is: My energy level is low', 'I am struggling to focus on tasks', 'I deny or ignore my problems', 'Too many deadlines', 'My self-esteem is low', 'Quesiton 6', 'Question7'];
+const questions = [' The first statement is: I never seen to have much energy', 'I really struggle to focus on tasks', 'I often ignore my problems', 'I am overwhelmed by my problems', 'I always have too many deadlines', 'I dont really feel confident'];
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -77,7 +77,7 @@ const CaptureNameIntentHandler = {
         i = 0;
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .reprompt()
+            .reprompt('Sorry, I didnt quite catch that')
             .getResponse();
     }
 };
@@ -88,6 +88,7 @@ const YesIntentHandler = {
         && handlerInput.requestEnvelope.request.intent.name === "AMAZON.YesIntent";
     },
     handle(handlerInput){
+        value = 0;
         const speechText = `I'll say 5 statements. Please rate each statement on a scale of 0-3. 0 being not at all and 3 being all the time.` + questions[i];
         return handlerInput.responseBuilder
             .speak(speechText)
@@ -134,11 +135,10 @@ const AnswerIntentHandler = {
              }
             i += 1;
              
-    
-            const positive = [`That's good to hear ${name} you're doing really well`, `Wow name you're feeling geat aren't you!`, `I'm really happy to hear how well you're doing ${name}`, `Oh my ${name} someones doing great today!`, `Go on ${name} spoil yourself, gt a glass of bubbly out!`];
-            const hobby = ['music', 'podcast', 'cardio','dance'];
+            const positive = [`That's good to hear ${name} you're doing really well`, `Wow ${name} you're feeling great aren't you!`, `I'm really happy to hear how well you're doing ${name}`, `Oh my ${name}, someones doing great today!`, `Go on ${name} spoil yourself, get a glass of bubbly out!`];
+            const hobby = [' listen to some music', 'listen to a podcast', ' do some light exercise',' go out and have a dance'];
             const randomN = Math.floor(Math.random() * Math.floor(4));
-            const neutral = [`Thanks for taking the time to answer ${name} maybe you should ` + hobby[randomN],`I think it's time we practice some self ${name} love why dont you go for a `+ hobby[randomN],`Have you been busy recently ${name} i think we should practice `+ hobby[randomN], `when was the last time you `+ hobby[randomN]+ ` if it hasnt been a while, I think you should do it now`,`${name} maybe you should call a friend`];
+            const neutral = [`Thanks for taking the time to answer, ${name}, maybe you should ` + hobby[randomN],`I think it's time we practice some self love, ${name}, why dont you `+ hobby[randomN],`Have you been busy recently ${name} can i suggest you `+ hobby[randomN], `i feel like youve been forgetting to `+ hobby[randomN]+ name + ` if its been a while, I think you should do it now`,`${name} maybe you should call a friend`];
             const negative = [`${name} I think it's time for a check up, maybe you should make an appointment.`];
             var x;
             var max;
@@ -152,23 +152,23 @@ const AnswerIntentHandler = {
             }
             else {
                 max =  negative.length;
-                 x = negative;
+                x = negative;
             }
-            const randomNum = Math.floor(Math.random() * Math.floor(max));
-             const speechText = x[randomNum];
+            // const randomNum = Math.floor(Math.random() * Math.floor(max));
+            const randomNum = Math.floor(Math.random() * max);
+
+            const speechText = x[randomNum];
     
             return handlerInput.responseBuilder
                 .speak(speechText)
                 .getResponse();
-            }
-            else {
+
+        } else {
             const answer = handlerInput.requestEnvelope.request.intent.slots.answer.value;
             if (parseInt(answer) > 3) {
              value += 3;
              }
-             else if (parseInt(answer) < 0){
-                 value+=0;
-             } else {
+             else {
             value += parseInt(answer);
              }
             i += 1;
@@ -183,55 +183,55 @@ const AnswerIntentHandler = {
     }
 }
 
-const CreateReminderIntentHandler = {
-    canHandle(handlerInput) {
-        return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-         && handlerInput.requestEnvelope.request.intent.name === 'CreateReminderIntent';
-    },
-    async handle(handlerInput) {
-        const reminderApiClient = handlerInput.serviceClientFactory.getReminderManagementServiceClient(),
-            { permissions } = handlerInput.requestEnvelope.context.System.user
+// const CreateReminderIntentHandler = {
+//     canHandle(handlerInput) {
+//         return handlerInput.requestEnvelope.request.type === 'IntentRequest'
+//          && handlerInput.requestEnvelope.request.intent.name === 'CreateReminderIntent';
+//     },
+//     async handle(handlerInput) {
+//         const reminderApiClient = handlerInput.serviceClientFactory.getReminderManagementServiceClient(),
+//             { permissions } = handlerInput.requestEnvelope.context.System.user
             
-        if(!permissions) {
-            return handlerInput.responseBuilder
-                .speak("Please go to the Alexa mobile app to grant reminder permissions.")
-                .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite'])
-                .getResponse();
-        }
+//         if(!permissions) {
+//             return handlerInput.responseBuilder
+//                 .speak("Please go to the Alexa mobile app to grant reminder permissions.")
+//                 .withAskForPermissionsConsentCard(['alexa::alerts:reminders:skill:readwrite'])
+//                 .getResponse();
+//         }
         
-        const reminderRequest = {
-           "trigger": {
-                "type" : "SCHEDULED_RELATIVE",
-                "offsetInSeconds" : "30"
-           },
-           "alertInfo": {
-                "spokenInfo": {
-                    "content": [{
-                        "locale": "en-US", 
-                        "text": "Let's Talk!"
-                    }]
-                }
-            },
-            "pushNotification" : {                            
-                 "status" : "ENABLED"
-            }
-        }
+//         const reminderRequest = {
+//           "trigger": {
+//                 "type" : "SCHEDULED_RELATIVE",
+//                 "offsetInSeconds" : "30"
+//           },
+//           "alertInfo": {
+//                 "spokenInfo": {
+//                     "content": [{
+//                         "locale": "en-US", 
+//                         "text": "Let's Talk!"
+//                     }]
+//                 }
+//             },
+//             "pushNotification" : {                            
+//                  "status" : "ENABLED"
+//             }
+//         }
         
-        try {
-            await reminderApiClient.createReminder(reminderRequest);
-        } catch (error) {
-            console.log(`~~~~ Error handled: ${error}`);
-            return handlerInput.responseBuilder
-                .speak("There was an error in your reminder. Please try again later.")
-                .getResponse();
-        }
+//         try {
+//             await reminderApiClient.createReminder(reminderRequest);
+//         } catch (error) {
+//             console.log(`~~~~ Error handled: ${error}`);
+//             return handlerInput.responseBuilder
+//                 .speak("There was an error in your reminder. Please try again later.")
+//                 .getResponse();
+//         }
         
-        const speechText = 'You succesfully created a reminder!';
-        return handlerInput.responseBuilder
-            .speak(speechText)
-            .getResponse();
-    }
-};
+//         const speechText = 'You succesfully created a reminder!';
+//         return handlerInput.responseBuilder
+//             .speak(speechText)
+//             .getResponse();
+//     }
+// };
 
 
 const HelpIntentHandler = {
@@ -336,7 +336,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         LaunchRequestHandler,
         CaptureNameIntentHandler,
         AnswerIntentHandler,
-        CreateReminderIntentHandler,
+        // CreateReminderIntentHandler,
         YesIntentHandler,
         NoIntentHandler,
         HelpIntentHandler,
